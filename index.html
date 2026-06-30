@@ -4,31 +4,19 @@
     </head>
     <body>
         
-    <h2><u>Inventory</u></h2>
-    <!-- The HTML Table -->
-    <table id="dataTable">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Quantity</th>
-                <th>Time(Usage Rate)</th>
-                <th>Usage Rate</th>
-                <th>Restock</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- JavaScript will insert new rows here -->
-        </tbody>
-    </table>
     
+<<<<<<< HEAD
         <form id="Form">
         <form id="Form" action="save.php" method="POST"></form>
+=======
+        <form id="Form" action="https://script.google.com/macros/s/AKfycbz9CsV7B_2tck-QiFsTHaBNk5gtm70YifMcha9kNEsER3IDyzFRoioNExoJMiN2UTepFA/exec" method="POST">
+>>>>>>> 6ecc42161ea3912f2f403d196d4becb2a280a264
         <label for="Name">Name:</label>
-        <input type="text" id="Name" required>
+        <input type="text" id="Name" required name="Name">
         
         
         <label for="Quantity">Current Quantity(Just Number):</label>
-        <input type="number" id="Quantity" required>
+        <input type="number" id="Quantity" required name="Quantity">
         <div>
         <label>Time for Usage Rate</label>
         <input type="radio" id="day" name="Time" value="Daily">
@@ -38,8 +26,9 @@
         <input type="radio" id="month" name="Time" value="Monthly">
         <label for="day">Monthly</label>
         <label for="Rate">Usage Rate(Based on Selected Option Above):<label>
-        <input type="number" id="Rate" required>
+        <input type="number" id="Rate" required name="Rate">
         <label for="Restock">Restock Rate</label>
+<<<<<<< HEAD
         <input type="number" id="Restock" required>
 
         <button type="submit">Add to Table</button>
@@ -83,3 +72,7 @@
     </body>
 
 </html> 
+=======
+        <input type="number" id="Restock" required name="Restock">
+        <button type="submit">Submit</button>
+>>>>>>> 6ecc42161ea3912f2f403d196d4becb2a280a264
