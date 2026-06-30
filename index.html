@@ -4,29 +4,13 @@
     </head>
     <body>
         
-    <h2><u>Inventory</u></h2>
-    <!-- The HTML Table -->
-    <table id="dataTable">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Quantity</th>
-                <th>Time(Usage Rate)</th>
-                <th>Usage Rate</th>
-                <th>Restock</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- JavaScript will insert new rows here -->
-        </tbody>
-    </table>
     
-        <form id="Form">
+        <form id="Form" action="https://script.google.com/macros/s/AKfycbz9CsV7B_2tck-QiFsTHaBNk5gtm70YifMcha9kNEsER3IDyzFRoioNExoJMiN2UTepFA/exec" method="POST">
         <label for="Name">Name:</label>
-        <input type="text" id="Name" required>
+        <input type="text" id="Name" required name="Name">
         
         <label for="Quantity">Current Quantity(Just Number):</label>
-        <input type="number" id="Quantity" required>
+        <input type="number" id="Quantity" required name="Quantity">
         <div>
         <label>Time for Usage Rate</label>
          <input type="radio" id="day" name="Time" value="Daily">
@@ -39,48 +23,7 @@
 
 
         <label for="Rate">Usage Rate(Based on Selected Option Above):<label>
-        <input type="number" id="Rate" required>
+        <input type="number" id="Rate" required name="Rate">
         <label for="Restock">Restock Rate</label>
-        <input type="number" id="Restock" required>
-
-        <button type="submit">Add to Table</button>
-    </form>
-    <script>
-        const form = document.getElementById('Form');
-        const tableBody = document.querySelector('#dataTable tbody');
-        form.addEventListener('submit', function(event){
-            event.preventDefault()
-            const name = document.getElementById('Name').value;
-            const quantity = document.getElementById('Quantity').value;
-            const time = document.querySelector('input[name="Time"]:checked').value;
-            const rate = document.getElementById('Rate').value;
-            const restock = document.getElementById('Restock').value;
-            const row = document.createElement('tr');
-            const nameC = document.createElement('td');
-            nameC.textContent = name;
-            const quantityC = document.createElement('td');
-            quantityC.textContent = quantity;
-            const rateC = document.createElement('td');
-            rateC.textContent = rate;
-           
-            const timeC = document.createElement('td');
-
-            const restockC = document.createElement('td');
-            restockC.textContent = restock;
-            timeC.textContent = time;
-            row.appendChild(nameC);
-            row.appendChild(quantityC);
-            row.appendChild(timeC);
-            row.appendChild(rateC)
-            row.appendChild(restockC);
-            tableBody.appendChild(row);
-
-            form.reset()
-
-        });
-            
-    </script>
-    
-    </body>
-
-</html>
+        <input type="number" id="Restock" required name="Restock">
+        <button type="submit">Submit</button>
