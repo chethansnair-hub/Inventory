@@ -1,11 +1,14 @@
 <?php
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Collect and sanitize the form inputs
-    $name = htmlspecialchars($_POST['username']);
-    $message = htmlspecialchars($_POST['message']);
+    $name = htmlspecialchars($_POST['Name']);
+    $quantity = htmlspecialchars($_POST['Quantity']);
+    $time = htmlspecialchars($_POST['Time']);
+    $rate = htmlspecialchars($_POST['Rate']);
+    $restock = htmlspecialchars($_POST['Restock']);
     
     // Format the data line
-    $data = "Name: " . $name . " | Message: " . $message . "\n";
+    $data = "Name: " . $name . " | Quantity: " . $quantity . " | Time: " . $time . " | Rate: " . $rate . "  | Restock: " . $restock ."\n";
     
     // Append the data to 'submissions.txt'
     // FILE_APPEND keeps previous data; LOCK_EX prevents concurrent write issues
