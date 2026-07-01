@@ -28,14 +28,20 @@
         <button type="submit">Add to Table</button>
         <table id="dataTable">
             <tr>
+                <th>Date</th>
                 <th>Name</th>
                 <th>Quantity</th>
                 <th>Time</th>
                 <th>Rate</th>
                 <th>Restock</th>
+                <th>Delete</th>
+                <th>RestockBTN</th>
                 
             </tr>
             <tr>
+                
+                <td></td>
+                <td></td>
                 <td></td>
                 <td></td>
                 <td></td>
@@ -47,63 +53,105 @@
         </table>
 
     <script>
+        const webhookUrl = 'https://inventoryalerts-3881.twil.io/send-alert';
         const form = document.getElementById('Form');
-        const tableBody = document.querySelector('#dataTable tbody') || document.querySelector('#dataTable');
+        const tableBody = document.querySelector('#dataTable tbody');
         let savedInventory = JSON.parse(localStorage.getItem('inventoryData')) || [];
 
+        
+        const dateNow = new Date().getTime();
+        let inventoryChanged = false;
 
         savedInventory.forEach(item => {
-        const row = document.createElement('tr');
-        
-        const nameC = document.createElement('td'); nameC.textContent = item.name;
-        const quantityC = document.createElement('td'); quantityC.textContent = item.quantity;
-        const timeC = document.createElement('td'); timeC.textContent = item.time;
-        const rateC = document.createElement('td'); rateC.textContent = item.rate;
-        const restockC = document.createElement('td'); restockC.textContent = item.restock;
-        
-        row.appendChild(nameC);
-        row.appendChild(quantityC);
-        row.appendChild(timeC);
-        row.appendChild(rateC);
-        row.appendChild(restockC);
-        tableBody.appendChild(row);
+            
+            if (!item.lastUpdated) {
+                item.lastUpdated = dateNow;
+                return;
+            }
+
+            
+            const msPassed = dateNow - item.lastUpdated;
+            const daysPassed = msPassed / (1000 * 60 * 60 * 24);
+            
+            let timeUnitsPassed = 0;
+
+            if (item.time === "Daily") {
+                timeUnitsPassed = daysPassed; 
+            } else if (item.time === "Weekly") {
+                timeUnitsPassed = daysPassed / 7;
+            } else if (item.time === "Monthly") {
+                timeUnitsPassed = daysPassed / 30;
+            }
+
+           
+            if (timeUnitsPassed > 0) {
+                const amountToSubtract = timeUnitsPassed * Number(item.rate);
+                
+                item.quantity = Math.max(0, Number(item.quantity) - amountToSubtract);
+                item.quantity = Math.round(item.quantity * 10) / 10;
+
+                // 🌟 YOUR NEW MESSAGE CODE LIVES HERE 🌟
+                if (item.quantity <= 2 && webhookUrl && !webhookUrl.includes('Paste Your')) {
+                    fetch(webhookUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            itemName: item.name,
+                            itemQuantity: item.quantity
+                        })
+                    })
+                    .then(res => console.log(`Alert dispatch success for: ${item.name}`))
+                    .catch(err => console.error("Cloud function call failed:", err));
+                }
+              
+                item.lastUpdated = dateNow;
+                inventoryChanged = true;
+            }
+        });
+
+      
+        if (inventoryChanged) {
+            localStorage.setItem('inventoryData', JSON.stringify(savedInventory));
+        }
+
+    
+        savedInventory.forEach(item => {
+            addTableRowToDOM(item);
         });
         
+      
         form.addEventListener('submit', function(event){
-            event.preventDefault()
+            event.preventDefault();
+            
             const name = document.getElementById('Name').value;
-            const quantity = document.getElementById('Quantity').value;
+            const quantity = Number(document.getElementById('Quantity').value);
             const time = document.querySelector('input[name="Time"]:checked').value;
-            const rate = document.getElementById('Rate').value;
-            const restock = document.getElementById('Restock').value;
-            const row = document.createElement('tr');
-            const nameC = document.createElement('td');
-            nameC.textContent = name;
-            const quantityC = document.createElement('td');
-            quantityC.textContent = quantity;
-            const rateC = document.createElement('td');
-            rateC.textContent = rate;
-           
-            const timeC = document.createElement('td');
+            const rate = Number(document.getElementById('Rate').value);
+            const restock = Number(document.getElementById('Restock').value);
+            
+            const dateString = new Date().toLocaleDateString();
+            const currentTimestamp = new Date().getTime();
 
-            const restockC = document.createElement('td');
-            restockC.textContent = restock;
-            timeC.textContent = time;
-            row.appendChild(nameC);
-            row.appendChild(quantityC);
-            row.appendChild(timeC);
-            row.appendChild(rateC)
-            row.appendChild(restockC);
-            tableBody.appendChild(row);
-            const newItem = { name, quantity, time, rate, restock };
+            
+            const newItem = { 
+                date: dateString, 
+                name, 
+                quantity, 
+                time, 
+                rate, 
+                restock,
+                lastUpdated: currentTimestamp 
+            };
+            
             savedInventory.push(newItem);
             localStorage.setItem('inventoryData', JSON.stringify(savedInventory));
 
-           
-            let fullReportString = `INVENTORY MASTER REPORT\n=======================\n`;
+            addTableRowToDOM(newItem);
 
+            let fullReportString = `INVENTORY REPORT\n=======================\n`;
             savedInventory.forEach((item, index) => {
                 fullReportString += `\nItem #${index + 1}:\n`;
+                fullReportString += `Date Added:   ${item.date}\n`;
                 fullReportString += `Name:         ${item.name}\n`;
                 fullReportString += `Quantity:     ${item.quantity}\n`;
                 fullReportString += `Time Frame:   ${item.time}\n`;
@@ -112,17 +160,78 @@
                 fullReportString += `-----------------------\n`;
             });
 
-
             const blob = new Blob([fullReportString], { type: 'text/plain' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
             link.download = 'submission.txt';
             link.click();
             URL.revokeObjectURL(link.href);
-            form.reset()
+            
+            form.reset();
         });
-    </script>
-        
-    </body>
 
-</html> 
+        
+        function addTableRowToDOM(item) {
+            const row = document.createElement('tr');
+            
+            const dateC = document.createElement('td'); dateC.textContent = item.date || 'N/A';
+            const nameC = document.createElement('td'); nameC.textContent = item.name;
+            const quantityC = document.createElement('td'); quantityC.textContent = item.quantity;
+            const timeC = document.createElement('td'); timeC.textContent = item.time;
+            const rateC = document.createElement('td'); rateC.textContent = item.rate;
+            const restockC = document.createElement('td'); restockC.textContent = item.restock;
+            
+            const actionC = document.createElement('td');
+            const deleteBtn = document.createElement('button');
+            const restockBtn = document.createElement('button')
+            deleteBtn.textContent = 'Delete';
+            
+            deleteBtn.style.backgroundColor = '#ff4d4d';
+            deleteBtn.style.color = 'white';
+            deleteBtn.style.border = 'none';
+            deleteBtn.style.padding = '4px 8px';
+            deleteBtn.style.cursor = 'pointer';
+
+            restockBtn.textContent = 'Restock';
+            restockBtn.style.backgroundColor = '#008000';
+            restockBtn.style.color = 'white';
+            restockBtn.style.border = 'none';
+            restockBtn.style.padding = '4px 8px';
+            restockBtn.style.cursor = 'pointer';
+            
+            deleteBtn.addEventListener('click', function() {
+                row.remove();
+                const currentPosition = savedInventory.indexOf(item);
+                if (currentPosition > -1) {
+                    savedInventory.splice(currentPosition, 1);
+                }
+                localStorage.setItem('inventoryData', JSON.stringify(savedInventory));
+            });
+
+            restockBtn.addEventListener('click', function() {
+            
+                
+                item.quantity = Number(item.quantity) + Number(item.restock);
+                
+               
+                item.quantity = Math.round(item.quantity * 10) / 10;
+
+                quantityC.textContent = item.quantity;
+
+        
+                localStorage.setItem('inventoryData', JSON.stringify(savedInventory));
+            });
+            
+            actionC.appendChild(deleteBtn);
+            actionC.appendChild(restockBtn);
+            row.appendChild(dateC);
+            row.appendChild(nameC);
+            row.appendChild(quantityC);
+            row.appendChild(timeC);
+            row.appendChild(rateC);
+            row.appendChild(restockC);
+            row.appendChild(actionC);
+            
+            tableBody.appendChild(row);
+        }
+    </script>
