@@ -11,7 +11,7 @@
         
         
         <label for="Quantity">Current Quantity(Just Number):</label>
-        <input type="number" id="Quantity" required name="Quantity">
+        <input type="number" id="Quantity" name="Quantity" required> 
         <div>
         <label>Time for Usage Rate</label>
         <input type="radio" id="day" name="Time" value="Daily">
@@ -21,7 +21,7 @@
         <input type="radio" id="month" name="Time" value="Monthly">
         <label for="day">Monthly</label>
         <label for="Rate">Usage Rate(Based on Selected Option Above):<label>
-        <input type="number" id="Rate" required name="Rate">
+        <input type="number" id="Rate" name="Rate" required>
         <label for="Restock">Restock Rate</label>
         <input type="number" id="Restock" required>
 
@@ -48,7 +48,27 @@
 
     <script>
         const form = document.getElementById('Form');
-        const tableBody = document.querySelector('#dataTable tbody');
+        const tableBody = document.querySelector('#dataTable tbody') || document.querySelector('#dataTable');
+        let savedInventory = JSON.parse(localStorage.getItem('inventoryData')) || [];
+
+
+        savedInventory.forEach(item => {
+        const row = document.createElement('tr');
+        
+        const nameC = document.createElement('td'); nameC.textContent = item.name;
+        const quantityC = document.createElement('td'); quantityC.textContent = item.quantity;
+        const timeC = document.createElement('td'); timeC.textContent = item.time;
+        const rateC = document.createElement('td'); rateC.textContent = item.rate;
+        const restockC = document.createElement('td'); restockC.textContent = item.restock;
+        
+        row.appendChild(nameC);
+        row.appendChild(quantityC);
+        row.appendChild(timeC);
+        row.appendChild(rateC);
+        row.appendChild(restockC);
+        tableBody.appendChild(row);
+        });
+        
         form.addEventListener('submit', function(event){
             event.preventDefault()
             const name = document.getElementById('Name').value;
@@ -75,28 +95,32 @@
             row.appendChild(rateC)
             row.appendChild(restockC);
             tableBody.appendChild(row);
+            const newItem = { name, quantity, time, rate, restock };
+            savedInventory.push(newItem);
+            localStorage.setItem('inventoryData', JSON.stringify(savedInventory));
 
+           
+            let fullReportString = `INVENTORY MASTER REPORT\n=======================\n`;
+
+            savedInventory.forEach((item, index) => {
+                fullReportString += `\nItem #${index + 1}:\n`;
+                fullReportString += `Name:         ${item.name}\n`;
+                fullReportString += `Quantity:     ${item.quantity}\n`;
+                fullReportString += `Time Frame:   ${item.time}\n`;
+                fullReportString += `Usage Rate:   ${item.rate}\n`;
+                fullReportString += `Restock Rate: ${item.restock}\n`;
+                fullReportString += `-----------------------\n`;
+            });
+
+
+            const blob = new Blob([fullReportString], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'submission.txt';
+            link.click();
+            URL.revokeObjectURL(link.href);
             form.reset()
-
         });
-            
-    </script>
-    <script>
-    document.getElementById('myForm').addEventListener('submit', function(e) {
-    e.preventDefault(); 
-    const name = document.getElementById('Name').value;
-    const quantity = document.getElementById('Quantity').value;
-    const time = document.querySelector('input[name="Time"]:checked').value;
-    const rate = document.getElementById('Rate').value;
-    const restock = document.getElementById('Restock').value;
-    
-    const blob = new Blob([textContent], { type: 'text/plain' });
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = 'submission.txt';
-    link.click();
-    URL.revokeObjectURL(link.href);
-    });
     </script>
         
     </body>
